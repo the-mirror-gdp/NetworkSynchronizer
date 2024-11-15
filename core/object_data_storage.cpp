@@ -1,6 +1,7 @@
 #include "object_data_storage.h"
 
 #include "core/error/error_macros.h"
+#include "core/os/os.h"
 #include "core/os/memory.h"
 
 #include "../scene_synchronizer.h"
@@ -112,7 +113,11 @@ ObjectLocalId ObjectDataStorage::find_object_local_id(ObjectHandle p_handle) con
 
 NS::ObjectData *ObjectDataStorage::get_object_data(ObjectNetId p_net_id, bool p_expected) {
 	if (p_expected) {
-		ERR_FAIL_UNSIGNED_INDEX_V(p_net_id.id, objects_data_organized_by_netid.size(), nullptr);
+		if(p_net_id.id >= objects_data_organized_by_netid.size()) {
+			OS::get_singleton()->print("get_object_data error");
+			print_stack_trace();
+			return nullptr;
+		}
 	} else {
 		if (objects_data_organized_by_netid.size() <= p_net_id.id) {
 			return nullptr;

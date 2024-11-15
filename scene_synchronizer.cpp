@@ -1384,7 +1384,9 @@ const std::vector<ObjectNetId> *SceneSynchronizerBase::client_get_simulated_obje
 }
 
 bool SceneSynchronizerBase::client_is_simulated_object(ObjectLocalId p_id) const {
-	ENSURE_V_MSG(is_client(), false, "This function CAN be used only on the client.");
+	if(!is_client()){
+		return false;
+	}
 	const ObjectData *od = get_object_data(p_id, true);
 	ENSURE_V(od, false);
 	return od->realtime_sync_enabled_on_client;
