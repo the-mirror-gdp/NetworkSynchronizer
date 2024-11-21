@@ -1545,6 +1545,10 @@ const ObjectData *SceneSynchronizerBase::get_object_data(ObjectNetId p_id, bool 
 
 PeerNetworkedController *SceneSynchronizerBase::get_controller_for_peer(int p_peer, bool p_expected) {
 	NS::PeerData *pd = MapFunc::get_or_null(peer_data, p_peer);
+	if (pd == nullptr)
+	{
+		return nullptr;
+	}
 	if (p_expected) {
 		ENSURE_V_MSG(pd, nullptr, "The peer is unknown `" + std::to_string(p_peer) + "`.");
 		return pd->get_controller();
