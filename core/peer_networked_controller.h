@@ -49,12 +49,12 @@ class PeerNetworkedController final {
 
 public:
 	enum ControllerType {
-		CONTROLLER_TYPE_NULL,
-		CONTROLLER_TYPE_NONETWORK,
-		CONTROLLER_TYPE_PLAYER,
-		CONTROLLER_TYPE_AUTONOMOUS_SERVER,
-		CONTROLLER_TYPE_SERVER,
-		CONTROLLER_TYPE_DOLL
+		CONTROLLER_TYPE_NULL = 0,
+		CONTROLLER_TYPE_NONETWORK = 1,
+		CONTROLLER_TYPE_PLAYER = 2,
+		CONTROLLER_TYPE_AUTONOMOUS_SERVER = 3,
+		CONTROLLER_TYPE_SERVER = 4,
+		CONTROLLER_TYPE_DOLL = 5
 	};
 
 private:
@@ -69,8 +69,8 @@ private:
 	ControllerType controller_type = CONTROLLER_TYPE_NULL;
 	Controller *controller = nullptr;
 	// Created using `memnew` into the constructor:
-	// The reason why this is a pointer allocated on the heap explicitely using
-	// `memnew` is becouse in Godot 4 GDScript doesn't properly handle non
+	// The reason why this is a pointer allocated on the heap explicitly using
+	// `memnew` is because in Godot 4 GDScript doesn't properly handle non
 	// `memnew` created Objects.
 	DataBuffer *inputs_buffer = nullptr;
 

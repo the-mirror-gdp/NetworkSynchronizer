@@ -1388,6 +1388,9 @@ bool SceneSynchronizerBase::client_is_simulated_object(ObjectLocalId p_id) const
 		return false;
 	}
 	const ObjectData *od = get_object_data(p_id, true);
+	if(!od) {
+		print_stack_trace();
+	}
 	ENSURE_V(od, false);
 	return od->realtime_sync_enabled_on_client;
 }
@@ -3708,8 +3711,18 @@ bool ClientSynchronizer::parse_snapshot(DataBuffer &p_snapshot) {
 		return false;
 	}
 
-	if make_unlikely (received_snapshot.input_id == FrameIndex::NONE && player_controller && player_controller->can_simulate()) {
-		// We espect that the player_controller is updated by this new snapshot,
+	if make_unlikely (
+		received_snapshot.input_id == FrameIndex::NONE && 
+		player_controller && 
+		player_controller->can_simulate()) {
+		if(player_controller) {
+			print_error("valid player controller in snapshot, but no frame input id");
+		} else if (!player_controller) {
+			print_error("invalid player controller in snapshot, cannot simulate it");
+		} else if (received_snapshot.input_id == FrameIndex::NONE) {
+			print_error("invalid player input id in the frame index, controller valid");
+		}
+ 		// We expect that the player_controller is updated by this new snapshot,
 		// so make sure it's done so.
 		SceneSynchronizerDebugger::singleton()->print(ERROR, "The player controller (" + std::to_string(player_controller->get_authority_peer()) + ") was not part of the received snapshot, this happens when the server destroys the peer controller.");
 	}

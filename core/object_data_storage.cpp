@@ -114,8 +114,8 @@ ObjectLocalId ObjectDataStorage::find_object_local_id(ObjectHandle p_handle) con
 NS::ObjectData *ObjectDataStorage::get_object_data(ObjectNetId p_net_id, bool p_expected) {
 	if (p_expected) {
 		if(p_net_id.id >= objects_data_organized_by_netid.size()) {
-			OS::get_singleton()->print("get_object_data error");
-			print_stack_trace();
+			//OS::get_singleton()->print("get_object_data error");
+			// print_stack_trace();
 			return nullptr;
 		}
 	} else {
@@ -153,6 +153,9 @@ NS::ObjectData *ObjectDataStorage::get_object_data(ObjectLocalId p_handle, bool 
 
 const NS::ObjectData *ObjectDataStorage::get_object_data(ObjectLocalId p_handle, bool p_expected) const {
 	if (p_expected) {
+		if(p_handle.id > objects_data.size()) {
+			print_stack_trace();
+		}
 		ERR_FAIL_UNSIGNED_INDEX_V(p_handle.id, objects_data.size(), nullptr);
 	} else {
 		if (p_handle.id < 0 || objects_data.size() <= p_handle.id) {

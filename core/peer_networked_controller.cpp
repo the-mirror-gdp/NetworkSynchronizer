@@ -281,7 +281,7 @@ bool PeerNetworkedController::can_simulate() {
 void PeerNetworkedController::notify_controller_reset() {
 	event_controller_reset.broadcast();
 }
-
+#pragma clang optimize off
 bool PeerNetworkedController::__input_data_parse(
 		const Vector<uint8_t> &p_data,
 		void *p_user_pointer,
@@ -299,6 +299,7 @@ bool PeerNetworkedController::__input_data_parse(
 	int ofs = 0;
 
 	ENSURE_V(data_len >= 4, false);
+	// read 4 bytes for the first input id
 	const FrameIndex first_input_id = FrameIndex{{ decode_uint32(p_data.ptr() + ofs) }};
 	ofs += 4;
 
@@ -309,18 +310,16 @@ bool PeerNetworkedController::__input_data_parse(
 	DataBuffer *pir = memnew(DataBuffer);
 	pir->copy(p_data);
 	pir->begin_read();
-
+	int iter_count = 0;
 	while (ofs < data_len) {
-		if(ofs + 1  > data_len){
-			ofs += data_len; // auto recovery in case of error
-		}
+
 		ENSURE_V_MSG(ofs + 1 <= data_len, false, "The arrived packet size doesn't meet the expected size.");
 		// First byte is used for the duplication count.
 		const uint8_t duplication = p_data[ofs];
 		ofs += 1;
 
 		// Validate input
-		const int input_buffer_offset_bit = ofs * 8;
+		const int input_buffer_offset_bit = ofs * 8; // 40? why
 		pir->shrink_to(input_buffer_offset_bit, (data_len - ofs) * 8);
 		pir->seek(input_buffer_offset_bit);
 		// Read metadata
@@ -331,10 +330,9 @@ bool PeerNetworkedController::__input_data_parse(
 		// Pad to 8 bits.
 		const int input_size_padded =
 				Math::ceil(static_cast<float>(input_size_in_bits) / 8.0);
-
 		if(ofs + input_size_padded > data_len){
-			// Advance the offset to parse the next input.
-			ofs += data_len; // auto recovery in case of error
+			ofs = data_len;
+			break;
 		}
 		ENSURE_V_MSG(ofs + input_size_padded <= data_len, false, "The arrived packet size doesn't meet the expected size.");
 
@@ -356,6 +354,7 @@ bool PeerNetworkedController::__input_data_parse(
 
 		// Advance the offset to parse the next input.
 		ofs += input_size_padded;
+		iter_count++;
 	}
 
 	memdelete(pir);
@@ -364,6 +363,7 @@ bool PeerNetworkedController::__input_data_parse(
 	ENSURE_V_MSG(ofs == data_len, false, "At the end was detected that the arrived packet has an unexpected size.");
 	return true;
 }
+#pragma clang optimize on
 
 RemotelyControlledController::RemotelyControlledController(PeerNetworkedController *p_peer_controller) :
 		Controller(p_peer_controller) {}
